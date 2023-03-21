@@ -5,18 +5,25 @@ import {Configuration, OpenAIApi} from "openai";
 import pg from "pg";
 
 import {decrypt} from "./utils/encryption";
-import {DB_SQL} from "./utils/schema";
+import {DB_SQL} from "./utils/sql/schema";
 import {ERROR_GIF} from "./utils/gifs";
+import {getAccessToken} from "./utils/get-access-token";
+import {verifyAccessToken} from "./utils/verify-access-token";
 
 const bot = new WebClient(process.env.SLACK_TOKEN);
 
 export const logic = functions.pubsub
   .topic("slack-query")
   .onPublish(async (message) => {
+    const accessToken = await getAccessToken(message.json.teamId);
+    console.log("accessToken", accessToken);
+    const teamId = await verifyAccessToken(accessToken);
+    console.log("teamId", teamId);
+
     const firestore = getFirestore();
     const documentRef = firestore
       .collection("teams")
-      .doc(message.json.teamId)
+      .doc(teamId)
       .collection("channel")
       .doc(message.json.channelId);
 
@@ -29,8 +36,12 @@ export const logic = functions.pubsub
       });
     }
 
-    const CONNECTION_STRING = decrypt(doc.data()?.CONNECTION_STRING);
-    const OPEN_AI_SECRET = decrypt(doc.data()?.OPEN_AI);
+    // const CONNECTION_STRING = decrypt(doc.data()?.CONNECTION_STRING);
+    // const OPEN_AI_SECRET = decrypt(doc.data()?.OPEN_AI_SECRET);
+    const CONNECTION_STRING = doc.data()?.CONNECTION_STRING;
+    const OPEN_AI_SECRET = doc.data()?.OPEN_AI_SECRET;
+
+    console.log("CONNECTION_STRING", CONNECTION_STRING);
 
     const client = new pg.Client(CONNECTION_STRING);
     const config = new Configuration({apiKey: OPEN_AI_SECRET});

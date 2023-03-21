@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "data": {
+      ".read": "auth.token.team_id == $slack_team_id",
+      ".write": "auth.token.team_id == $slack_team_id"
+    }
+  }
+}

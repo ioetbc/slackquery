@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import {PubSub} from "@google-cloud/pubsub";
+
 import {THINKING_GIFS} from "./utils/gifs";
 
 const pubsubClient = new PubSub();

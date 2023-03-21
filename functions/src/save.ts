@@ -5,6 +5,7 @@ import {encrypt} from "./utils/encryption";
 
 export const save = functions.https.onRequest(
   async (request: functions.Request, response: functions.Response) => {
+    console.log("request.auth", request.body);
     const {view, user} = JSON.parse(request.body.payload);
     const state = Object.values(view.state.values) as any;
 
@@ -20,6 +21,7 @@ export const save = functions.https.onRequest(
       .collection("channel")
       .doc(channel)
       .set({
+        $slack_team_id: user.team_id,
         CONNECTION_STRING: connectionString.encryptedData,
         OPEN_AI: openAiSecret.encryptedData,
       });
